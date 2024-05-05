@@ -1,0 +1,52 @@
+package com.alvi.gateway.config;
+
+import com.alvi.gateway.converter.CustomJwtGrantedAuthoritiesConverter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.server.resource.authentication.*;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+
+@Configuration
+@EnableWebFluxSecurity
+public class WebSecurityConfig {
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String issuer;
+
+    @Bean
+    public SecurityWebFilterChain protectedSecurityFilterChain(ServerHttpSecurity http) throws Exception {
+        http
+                .authorizeExchange(exchanges -> exchanges.anyExchange().authenticated())
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .oauth2ResourceServer(oauthCustomizer ->
+                        oauthCustomizer.jwt(jwtCustomizer ->
+                                jwtCustomizer
+                                        .jwtDecoder(getJwtDecoder())
+                                        .jwtAuthenticationConverter(getReactiveJwtAuthenticationConverterAdapter())
+                        )
+                );
+
+        return http.build();
+    }
+
+    private ReactiveJwtDecoder getJwtDecoder() {
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
+        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(withIssuer);
+
+        var jwtDecoder = (NimbusReactiveJwtDecoder) ReactiveJwtDecoders.fromOidcIssuerLocation(issuer);
+        jwtDecoder.setJwtValidator(validator);
+        return jwtDecoder;
+    }
+
+    private ReactiveJwtAuthenticationConverterAdapter getReactiveJwtAuthenticationConverterAdapter() {
+        var jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new CustomJwtGrantedAuthoritiesConverter());
+        return new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter);
+    }
+}

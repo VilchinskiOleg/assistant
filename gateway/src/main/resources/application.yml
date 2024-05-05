@@ -1,0 +1,15 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${auth0.domain}/
+
+auth0:
+#  domain: dev-06021515.okta.com
+  domain: dev-vrw8iuuo5gbsn7as.us.auth0.com
