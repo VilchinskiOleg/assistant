@@ -3,7 +3,7 @@ name: Validate pull request before merge
 on:
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   validate-pr:
