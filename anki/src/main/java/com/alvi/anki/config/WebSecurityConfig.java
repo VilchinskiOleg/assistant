@@ -1,5 +1,6 @@
 package com.alvi.anki.config;
 
+import com.alvi.anki.filter.PopulateAuthoritiesFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
