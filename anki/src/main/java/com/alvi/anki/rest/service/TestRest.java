@@ -15,5 +15,4 @@ public class TestRest {
     public Mono<String> getAllItems() {
         return Mono.just("OK");
     }
-
 }
